@@ -1,0 +1,23 @@
+# Server Config
+server:
+  port: 8500
+  tomcat:
+    max-http-form-post-size: 128MB
+
+# Spring Config
+spring:
+  application:
+    name: fileloader-api
+  profiles:
+    active: local
+
+# HDFS Config
+hdfs:
+  username: test_hadoop_user
+  base_uri: hdfs://hdfs-local
+
+# Logging:
+logging:
+  level:
+    com.geoffkflee: DEBUG
+    root: INFO
