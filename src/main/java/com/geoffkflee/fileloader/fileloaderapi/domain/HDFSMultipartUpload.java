@@ -2,6 +2,7 @@ package com.geoffkflee.fileloader.fileloaderapi.domain;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import lombok.experimental.SuperBuilder;
 import org.apache.hadoop.fs.UploadHandle;
 
