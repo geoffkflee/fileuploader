@@ -23,7 +23,7 @@ public class HDFSConfiguration {
     }
 
     @Bean
-    FileSystem configureFileSystem() throws IOException, InterruptedException {
+    FileSystem fileSystem() throws IOException, InterruptedException {
         org.apache.hadoop.conf.Configuration hadoopConfiguration
                 = new org.apache.hadoop.conf.Configuration(true);
         return FileSystem.newInstance(URI.create(hdfsUri), hadoopConfiguration, hdfsUsername);

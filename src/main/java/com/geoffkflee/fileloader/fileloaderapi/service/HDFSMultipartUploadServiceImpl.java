@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HDFSMultipartUpload> {
