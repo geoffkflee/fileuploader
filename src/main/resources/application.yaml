@@ -10,6 +10,11 @@ spring:
     name: fileloader-api
   profiles:
     active: local
+  servlet:
+    multipart:
+      enabled: false
+      max-request-size: -1
+      max-file-size: -1
 
 # HDFS Config
 hdfs:

@@ -9,6 +9,7 @@ import com.geoffkflee.fileloader.fileloaderapi.exception.UploadInitializationExc
 import com.geoffkflee.fileloader.fileloaderapi.exception.UploadSegmentException;
 import com.geoffkflee.fileloader.fileloaderapi.repository.HDFSMultipartUploadRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,16 +25,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
+@Slf4j
 public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HDFSMultipartUpload> {
-
-    private final static Logger LOG = LogManager.getLogger(HDFSMultipartUploadServiceImpl.class);
 
     private final FileSystem hdfsFileSystem;
     private final HDFSMultipartUploadRepository hdfsMultipartUploadRepository;
 
     @Override
     public HDFSMultipartUpload initialize(String destination, String fileName, Long fileSize, Long chunkSize) {
-        LOG.debug("Initializing a new HDFS multipart upload to [{}]", destination);
+        log.debug("Initializing a new HDFS multipart upload to [{}]", destination);
 
         Path destinationPath = new Path(destination);
         UploadHandle uploadHandle;
@@ -41,7 +41,7 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
             MultipartUploader multipartUploader = hdfsFileSystem.createMultipartUploader(destinationPath).build();
             uploadHandle = multipartUploader.startUpload(destinationPath).get();
         } catch (IOException | ExecutionException | InterruptedException e) {
-            LOG.error("Could not initiate an HDFS multipart upload to [{}]", destination);
+            log.error("Could not initiate an HDFS multipart upload to [{}]", destination);
             throw new UploadInitializationException(e.getLocalizedMessage(), e.getCause());
         }
 
@@ -69,33 +69,33 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
     }
 
     @Override
-    public HDFSMultipartUpload uploadPart(UUID multipartId, Integer index, InputStream inputStream) {
-        LOG.debug("Streaming HDFS upload segment [#{}] for multipart upload [{}]", index, multipartId);
+    public HDFSMultipartUpload uploadPart(UUID multipartId, Integer segmentIndex, InputStream inputStream) {
+        log.debug("Streaming HDFS upload segment [#{}] for multipart upload [{}]", segmentIndex, multipartId);
 
         HDFSMultipartUpload hdfsMultipartUpload = hdfsMultipartUploadRepository.findById(multipartId).orElseThrow();
-        HDFSMultipartSegment targetSegment = hdfsMultipartUpload.getSegments().get(index);
+        HDFSMultipartSegment targetSegment = hdfsMultipartUpload.getSegments().get(segmentIndex);
         Path destinationPath = new Path(hdfsMultipartUpload.getDestination());
         try {
             MultipartUploader multipartUploader = hdfsFileSystem.createMultipartUploader(destinationPath).build();
             targetSegment.setPartHandle(multipartUploader.putPart(
                 hdfsMultipartUpload.getUploadHandle(),
-                index,
+                segmentIndex,
                 new Path(hdfsMultipartUpload.getDestination()),
                 inputStream,
                 targetSegment.getChunkSize()
             ).get());
-            targetSegment.setStatus(SegmentStatus.COMPLETED);
         } catch (IOException | InterruptedException | ExecutionException e) {
-            LOG.error("Could not upload part [#{}] for HDFS multipart upload [{}]", index, multipartId);
+            log.error("Could not upload part [#{}] for HDFS multipart upload [{}]", segmentIndex, multipartId);
             throw new UploadSegmentException(e.getLocalizedMessage(), e.getCause());
         }
 
+        targetSegment.setStatus(SegmentStatus.COMPLETED);
         return hdfsMultipartUploadRepository.save(hdfsMultipartUpload);
     }
 
     @Override
     public HDFSMultipartUpload complete(UUID multipartId) {
-        LOG.debug("Notifying to HDFS that multipart upload [{}] is complete", multipartId);
+        log.debug("Notifying to HDFS that multipart upload [{}] is complete", multipartId);
 
         HDFSMultipartUpload hdfsMultipartUpload = hdfsMultipartUploadRepository.findById(multipartId).orElseThrow();
         Map<Integer, PartHandle> partHandles = new HashMap<>();
@@ -105,11 +105,11 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
             MultipartUploader multipartUploader = hdfsFileSystem.createMultipartUploader(destinationPath).build();
             multipartUploader.complete(hdfsMultipartUpload.getUploadHandle(), destinationPath, partHandles).get();
         } catch (IOException | InterruptedException | ExecutionException e) {
-            LOG.error("Could not notify HDFS of the completed multipart upload [{}]", multipartId);
+            log.error("Could not notify HDFS of the completed multipart upload [{}]", multipartId);
             throw new UploadFinalizationException(e.getLocalizedMessage(), e.getCause());
         }
-        hdfsMultipartUpload.setStatus(UploadStatus.COMPLETED);
 
+        hdfsMultipartUpload.setStatus(UploadStatus.COMPLETED);
         return hdfsMultipartUploadRepository.save(hdfsMultipartUpload);
     }
 

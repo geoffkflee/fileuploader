@@ -9,7 +9,7 @@ public interface MultipartUploadService<T extends MultipartUpload> {
 
     T initialize(String destination, String fileName, Long fileSize, Long chunkSize);
 
-    T uploadPart(UUID multipartId, Integer index, InputStream inputStream);
+    T uploadPart(UUID multipartId, Integer segmentIndex, InputStream inputStream);
 
     T complete(UUID multipartId);
 

@@ -1,7 +1,6 @@
 package com.geoffkflee.fileloader.fileloaderapi.domain;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -13,7 +12,6 @@ import java.util.UUID;
 
 @Data
 @SuperBuilder
-@NoArgsConstructor
 public abstract class GenericEntity {
 
     @Id
@@ -24,5 +22,10 @@ public abstract class GenericEntity {
 
     @LastModifiedDate
     Instant lastModifiedAt;
+
+    GenericEntity() {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+    }
 
 }

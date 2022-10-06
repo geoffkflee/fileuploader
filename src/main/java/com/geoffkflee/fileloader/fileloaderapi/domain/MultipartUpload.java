@@ -9,13 +9,9 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
-public abstract class MultipartUpload extends GenericEntity {
+public abstract class MultipartUpload<T extends MultipartSegment> extends GenericEntity {
 
     UploadStatus status;
-
-    @Getter(AccessLevel.NONE)
-    @Setter(AccessLevel.NONE)
-    List<? extends MultipartSegment> segments;
 
     String destination;
 
@@ -25,4 +21,5 @@ public abstract class MultipartUpload extends GenericEntity {
 
     Long chunkSize;
 
+    List<T> segments;
 }

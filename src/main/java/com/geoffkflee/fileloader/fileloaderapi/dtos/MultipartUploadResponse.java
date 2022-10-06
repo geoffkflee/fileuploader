@@ -2,20 +2,22 @@ package com.geoffkflee.fileloader.fileloaderapi.dtos;
 
 import com.geoffkflee.fileloader.fileloaderapi.enums.SegmentStatus;
 import com.geoffkflee.fileloader.fileloaderapi.enums.UploadStatus;
+import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-public class MultipartUploadRecordResponse {
+@Builder
+public class MultipartUploadResponse {
 
     UUID id;
 
-    LocalDateTime createdAt;
+    Instant createdAt;
 
-    LocalDateTime lastModifiedAt;
+    Instant lastModifiedAt;
 
     List<SegmentStatus> segments;
 

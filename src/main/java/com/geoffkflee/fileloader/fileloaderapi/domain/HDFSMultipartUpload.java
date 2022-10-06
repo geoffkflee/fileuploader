@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder
-public class HDFSMultipartUpload extends MultipartUpload {
+public class HDFSMultipartUpload extends MultipartUpload<HDFSMultipartSegment> {
 
     UploadHandle uploadHandle;
 
