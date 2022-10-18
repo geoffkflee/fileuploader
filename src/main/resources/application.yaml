@@ -16,15 +16,21 @@ spring:
       max-request-size: -1
       max-file-size: -1
   datasource:
-    url: jdbc:mariadb://localhost:3306
+    url: jdbc:mariadb://localhost:3306/fileloader
     username: root
     password: Password123!
     driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
 
 # HDFS Config
-hdfs:
-  username: test_hadoop_user
-  base_uri: hdfs://hdfs-local
+hadoop:
+  hdfs:
+    username: hdfs
+    base_uri: hdfs://localhost:9000
+  config:
+    library_path: E:\dev\hadoop-3.0.0
 
 # Logging:
 logging:

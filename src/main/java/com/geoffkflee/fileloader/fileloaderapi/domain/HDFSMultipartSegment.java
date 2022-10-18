@@ -1,14 +1,15 @@
 package com.geoffkflee.fileloader.fileloaderapi.domain;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.hadoop.fs.PartHandle;
 
+import javax.persistence.Entity;
+
+@Entity
 @Data
-@EqualsAndHashCode(callSuper = true)
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 @NoArgsConstructor
 public class HDFSMultipartSegment extends MultipartSegment {
 

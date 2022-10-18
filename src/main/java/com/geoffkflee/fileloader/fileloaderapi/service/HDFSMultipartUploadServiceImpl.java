@@ -7,20 +7,18 @@ import com.geoffkflee.fileloader.fileloaderapi.enums.UploadStatus;
 import com.geoffkflee.fileloader.fileloaderapi.exception.UploadFinalizationException;
 import com.geoffkflee.fileloader.fileloaderapi.exception.UploadInitializationException;
 import com.geoffkflee.fileloader.fileloaderapi.exception.UploadSegmentException;
+import com.geoffkflee.fileloader.fileloaderapi.repository.HDFSMultipartSegmentRepository;
 import com.geoffkflee.fileloader.fileloaderapi.repository.HDFSMultipartUploadRepository;
+import com.google.common.collect.ImmutableList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,6 +30,7 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
 
     private final FileSystem hdfsFileSystem;
     private final HDFSMultipartUploadRepository hdfsMultipartUploadRepository;
+    private final HDFSMultipartSegmentRepository hdfsMultipartSegmentRepository;
 
     @Override
     public HDFSMultipartUpload initialize(String destination, String fileName, Long fileSize, Long chunkSize) {
@@ -40,8 +39,11 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
         Path destinationPath = new Path(destination);
         UploadHandle uploadHandle;
         try {
+            hdfsFileSystem.mkdirs(destinationPath);
             MultipartUploader multipartUploader = hdfsFileSystem.createMultipartUploader(destinationPath).build();
-            uploadHandle = multipartUploader.startUpload(destinationPath).get();
+            uploadHandle = multipartUploader.startUpload(
+                new Path(hdfsFileSystem.getUri().toString().concat(destination).concat(File.separator).concat(fileName))
+            ).get();
         } catch (IOException | ExecutionException | InterruptedException e) {
             log.error("Could not initiate an HDFS multipart upload to [{}]", destination);
             throw new UploadInitializationException(e.getLocalizedMessage(), e.getCause());
@@ -52,14 +54,16 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
         List<HDFSMultipartSegment> segments = IntStream
             .range(0, numberOfChunks)
             .mapToObj(
-                index -> HDFSMultipartSegment.builder()
+                index -> new HDFSMultipartSegment().toBuilder()
                     .chunkSize(index == numberOfChunks - 1 ? fileSize % chunkSize : chunkSize)
                     .build()
             )
             .collect(Collectors.toList());
 
+        hdfsMultipartSegmentRepository.saveAll(segments);
+
         return hdfsMultipartUploadRepository.save(
-            HDFSMultipartUpload.builder()
+            new HDFSMultipartUpload().toBuilder()
                 .uploadHandle(uploadHandle)
                 .destination(destination)
                 .fileName(fileName)
@@ -113,6 +117,13 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
 
         hdfsMultipartUpload.setStatus(UploadStatus.COMPLETED);
         return hdfsMultipartUploadRepository.save(hdfsMultipartUpload);
+    }
+
+    @Override
+    public List<HDFSMultipartUpload> retrieveAll() {
+        log.debug("Retrieving all HDFS Multipart Uploads");
+
+        return ImmutableList.copyOf(hdfsMultipartUploadRepository.findAll());
     }
 
 }

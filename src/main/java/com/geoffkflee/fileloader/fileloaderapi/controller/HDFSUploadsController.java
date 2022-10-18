@@ -3,7 +3,7 @@ package com.geoffkflee.fileloader.fileloaderapi.controller;
 import com.geoffkflee.fileloader.fileloaderapi.domain.HDFSMultipartUpload;
 import com.geoffkflee.fileloader.fileloaderapi.dtos.MultipartUploadResponse;
 import com.geoffkflee.fileloader.fileloaderapi.dtos.MultipartUploadRequest;
-import com.geoffkflee.fileloader.fileloaderapi.factory.MultipartUploadApiFactory;
+import com.geoffkflee.fileloader.fileloaderapi.factory.MultipartUploadResponseFactory;
 import com.geoffkflee.fileloader.fileloaderapi.service.MultipartUploadService;
 import com.sun.istack.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/uploads/hdfs")
@@ -25,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 public class HDFSUploadsController {
 
     private final MultipartUploadService<HDFSMultipartUpload> hdfsMultipartUploadService;
-    private final MultipartUploadApiFactory multipartUploadApiFactory;
+    private final MultipartUploadResponseFactory multipartUploadResponseFactory;
 
     @PostMapping("/")
     public ResponseEntity<MultipartUploadResponse> initiateMultipartUpload(
@@ -45,7 +47,7 @@ public class HDFSUploadsController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(multipartUploadApiFactory.toResponse(hdfsMultipartUpload));
+                .body(multipartUploadResponseFactory.toResponse(hdfsMultipartUpload));
     }
 
     @PutMapping("/{multipartUploadId}")
@@ -73,7 +75,7 @@ public class HDFSUploadsController {
             }
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(multipartUploadApiFactory.toResponse(hdfsMultipartUpload));
+                    .body(multipartUploadResponseFactory.toResponse(hdfsMultipartUpload));
         });
     }
 
@@ -87,7 +89,16 @@ public class HDFSUploadsController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(multipartUploadApiFactory.toResponse(hdfsMultipartUpload));
+                .body(multipartUploadResponseFactory.toResponse(hdfsMultipartUpload));
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<List<MultipartUploadResponse>> getAllMultipartUploads() {
+        log.info("Request received to retrieve all multipart uploads");
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(hdfsMultipartUploadService.retrieveAll().stream().map(multipartUploadResponseFactory::toResponse).collect(Collectors.toList()));
     }
 
 }

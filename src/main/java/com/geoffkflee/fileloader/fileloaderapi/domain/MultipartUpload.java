@@ -4,14 +4,17 @@ import com.geoffkflee.fileloader.fileloaderapi.enums.UploadStatus;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import javax.persistence.ElementCollection;
+import javax.persistence.MappedSuperclass;
 import java.util.List;
 
+@MappedSuperclass
 @Data
-@EqualsAndHashCode(callSuper = true)
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor
 public abstract class MultipartUpload<T extends MultipartSegment> extends GenericEntity {
 
-    UploadStatus status;
+    UploadStatus status = UploadStatus.PENDING;
 
     String destination;
 
@@ -21,5 +24,6 @@ public abstract class MultipartUpload<T extends MultipartSegment> extends Generi
 
     Long chunkSize;
 
+    @ElementCollection
     List<T> segments;
 }

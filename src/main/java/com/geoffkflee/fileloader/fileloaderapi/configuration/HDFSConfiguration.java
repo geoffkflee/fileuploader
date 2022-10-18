@@ -14,18 +14,23 @@ public class HDFSConfiguration {
     private final String hdfsUri;
     private final String hdfsUsername;
 
+    private final String hadoopHome;
+
     public HDFSConfiguration(
-            @Value("${hdfs.base_uri}") String hdfsURI,
-            @Value("${hdfs.username}") String hdfsUsername
+            @Value("${hadoop.hdfs.base_uri}") String hdfsURI,
+            @Value("${hadoop.hdfs.username}") String hdfsUsername,
+            @Value("${hadoop.config.library_path}") String hadoopHome
     ) {
         this.hdfsUri = hdfsURI;
         this.hdfsUsername = hdfsUsername;
+        this.hadoopHome = hadoopHome;
     }
 
     @Bean
     FileSystem fileSystem() throws IOException, InterruptedException {
         org.apache.hadoop.conf.Configuration hadoopConfiguration
                 = new org.apache.hadoop.conf.Configuration(true);
+        System.setProperty("hadoop.home.dir", hadoopHome);
         return FileSystem.newInstance(URI.create(hdfsUri), hadoopConfiguration, hdfsUsername);
     }
 
