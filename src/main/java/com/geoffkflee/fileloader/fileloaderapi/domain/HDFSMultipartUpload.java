@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import org.apache.hadoop.fs.UploadHandle;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,8 +17,7 @@ public class HDFSMultipartUpload extends MultipartUpload<HDFSMultipartSegment> {
 
     UploadHandle uploadHandle;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "id")
-    @JoinColumn
-    List<HDFSMultipartSegment> segments;
+    @OneToMany(mappedBy = "hdfsMultipartUpload", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<HDFSMultipartSegment> segments = new ArrayList<>();
 
 }

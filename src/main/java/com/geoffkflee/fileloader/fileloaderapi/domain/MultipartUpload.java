@@ -4,8 +4,8 @@ import com.geoffkflee.fileloader.fileloaderapi.enums.UploadStatus;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 import java.util.List;
 
 @MappedSuperclass
@@ -24,6 +24,6 @@ public abstract class MultipartUpload<T extends MultipartSegment> extends Generi
 
     Long chunkSize;
 
-    @ElementCollection
+    @Transient
     List<T> segments;
 }

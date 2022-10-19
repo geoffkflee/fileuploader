@@ -1,11 +1,12 @@
 package com.geoffkflee.fileloader.fileloaderapi.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.apache.hadoop.fs.PartHandle;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
 
 @Entity
 @Data
@@ -14,5 +15,10 @@ import javax.persistence.Entity;
 public class HDFSMultipartSegment extends MultipartSegment {
 
     PartHandle partHandle;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
+    HDFSMultipartUpload hdfsMultipartUpload;
 
 }

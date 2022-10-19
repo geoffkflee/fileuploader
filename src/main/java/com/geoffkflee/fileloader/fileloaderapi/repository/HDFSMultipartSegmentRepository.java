@@ -10,5 +10,4 @@ import java.util.UUID;
 public interface HDFSMultipartSegmentRepository extends CrudRepository<HDFSMultipartSegment, UUID> {
 
 
-
 }

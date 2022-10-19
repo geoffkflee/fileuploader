@@ -49,6 +49,15 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
             throw new UploadInitializationException(e.getLocalizedMessage(), e.getCause());
         }
 
+        // Create HDFSMultipartUpload record instance to refer back to.
+        HDFSMultipartUpload hdfsMultipartUpload = new HDFSMultipartUpload().toBuilder()
+            .uploadHandle(uploadHandle)
+            .destination(destination)
+            .fileName(fileName)
+            .fileSize(fileSize)
+            .chunkSize(chunkSize)
+            .build();
+
         // Create all the multipart segments based on file size / chunk size rounded up.
         int numberOfChunks = (int) Math.ceil(fileSize / chunkSize);
         List<HDFSMultipartSegment> segments = IntStream
@@ -56,22 +65,14 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
             .mapToObj(
                 index -> new HDFSMultipartSegment().toBuilder()
                     .chunkSize(index == numberOfChunks - 1 ? fileSize % chunkSize : chunkSize)
+                    .hdfsMultipartUpload(hdfsMultipartUpload)
                     .build()
             )
             .collect(Collectors.toList());
 
-        hdfsMultipartSegmentRepository.saveAll(segments);
+        hdfsMultipartUpload.setSegments(segments);
 
-        return hdfsMultipartUploadRepository.save(
-            new HDFSMultipartUpload().toBuilder()
-                .uploadHandle(uploadHandle)
-                .destination(destination)
-                .fileName(fileName)
-                .fileSize(fileSize)
-                .chunkSize(chunkSize)
-                .segments(segments)
-                .build()
-        );
+        return hdfsMultipartUploadRepository.save(hdfsMultipartUpload);
     }
 
     @Override
@@ -123,7 +124,10 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
     public List<HDFSMultipartUpload> retrieveAll() {
         log.debug("Retrieving all HDFS Multipart Uploads");
 
-        return ImmutableList.copyOf(hdfsMultipartUploadRepository.findAll());
+        List<HDFSMultipartUpload> hdfsMultipartUploads = new ArrayList<>();
+        hdfsMultipartUploadRepository.findAll().forEach(hdfsMultipartUploads::add);
+
+        return hdfsMultipartUploads;
     }
 
 }
