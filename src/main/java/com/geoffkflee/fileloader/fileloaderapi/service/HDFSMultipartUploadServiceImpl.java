@@ -61,7 +61,7 @@ public class HDFSMultipartUploadServiceImpl implements MultipartUploadService<HD
         // Create all the multipart segments based on file size / chunk size rounded up.
         int numberOfChunks = (int) Math.ceil(fileSize / chunkSize);
         List<HDFSMultipartSegment> segments = IntStream
-            .range(0, numberOfChunks)
+            .rangeClosed(0, numberOfChunks)
             .mapToObj(
                 index -> new HDFSMultipartSegment().toBuilder()
                     .chunkSize(index == numberOfChunks - 1 ? fileSize % chunkSize : chunkSize)

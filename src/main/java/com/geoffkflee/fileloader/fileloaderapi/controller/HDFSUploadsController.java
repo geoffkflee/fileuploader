@@ -5,7 +5,6 @@ import com.geoffkflee.fileloader.fileloaderapi.dtos.MultipartUploadResponse;
 import com.geoffkflee.fileloader.fileloaderapi.dtos.MultipartUploadRequest;
 import com.geoffkflee.fileloader.fileloaderapi.factory.MultipartUploadResponseFactory;
 import com.geoffkflee.fileloader.fileloaderapi.service.MultipartUploadService;
-import com.sun.istack.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
